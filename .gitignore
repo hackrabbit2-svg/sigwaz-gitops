@@ -1,0 +1,13 @@
+Python cache
+
+pycache/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+SigWaz GitOps hidden state and test folders
+
+.sigwaz_state.json
+.sigma_upstream_clone/
+my_test_rules/
