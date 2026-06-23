@@ -109,7 +109,10 @@ class SigmaWazuhSyncPlugin:
 
         if is_first_run or not last_commit:
             print("[*] Performing FULL conversion. Please wait...")
-            for root, _, files in os.walk(self.sigma_clone_path):
+            for root, dirs, files in os.walk(self.sigma_clone_path):
+                # --- NEW: Tell os.walk to completely skip noisy folders! ---
+                dirs[:] = [d for d in dirs if d not in ['.git', 'deprecated', 'rules-threat-hunting']]
+                
                 for file in files:
                     self._convert_and_write(Path(root) / file)
         else:
@@ -125,6 +128,11 @@ class SigmaWazuhSyncPlugin:
             for diff in diffs:
                 if diff.change_type in ['A', 'M', 'R']: 
                     file_path = diff.b_path if diff.b_path else diff.a_path
+                    
+                    # --- NEW: Ignore these folders during future delta updates too ---
+                    if any(ignored in Path(file_path).parts for ignored in ['deprecated', 'rules-threat-hunting']):
+                        continue
+                        
                     self._convert_and_write(self.sigma_clone_path / file_path)
                 elif diff.change_type == 'D':
                     self._delete_wazuh_rule(self.sigma_clone_path / diff.a_path)
